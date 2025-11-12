@@ -1,0 +1,36 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box
+}
+
+body {
+    height: 100vh;
+    padding: 1em;
+    overflow: hidden
+}
+
+h1 {
+    display: flex;
+    justify-content: center;
+}
+
+main {
+    height: 100%;
+    width: 100%;
+    border: black 1px solid;
+    position: relative;
+    overflow: hidden;
+    background-color: black;
+}
+
+#vaisseau {
+    width: 70px;
+    height: 70px;
+    position: absolute;
+    z-index: 80;
+    top: 90%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: top 250ms, left 250ms;
+}
