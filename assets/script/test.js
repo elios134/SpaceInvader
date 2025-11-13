@@ -1,14 +1,36 @@
 // On récupère l'image
 const ship = document.getElementById("vaisseau");
+let buttonStart = document.querySelector("#start");
+let buttonRestart = document.querySelector("#restart");
+let timerContainer = document.querySelector("#timerContainer")
+let buttonEnd = document.querySelector("#end");
+const gameContainer = document.getElementById("gameContainer");
 
-// On définit une position de départ
+let timerInterval = null;
+
+// Position du vaisseau
 let x = 50;
 let y = 90;
-const vitesse = 5; // Nombre de pixels par mouvement
+const vitesse = 1;
 
-// Écoute des touches du clavier
+// Aliens
+let alienList = [];
+const alienCount = 6;
+let speed;
+let alienSpeed = 300;
+
+// HUD
+let score = 0;
+let vies = 3;
+// --- HUD UPDATE ---
+function updateHUD() {
+  document.getElementById("hud-score").textContent = "Score : " + score;
+  document.getElementById("hud-lives").textContent = "Vies : " + "❤".repeat(vies);
+}
+// ---------------------------------------------
+// MOUVEMENT VAISSEAU
+// ---------------------------------------------
 document.addEventListener("keydown", (event) => {
-  // Vérifie quelle touche est pressée
   switch (event.key) {
     case "ArrowRight":
       x += vitesse;
@@ -23,8 +45,214 @@ document.addEventListener("keydown", (event) => {
       y += vitesse;
       break;
   }
-
-  // Applique la nouvelle position à l'image
   ship.style.left = x + "%";
   ship.style.top = y + "%";
+
+  x = Math.max(0, Math.min(90, x));
+  y = Math.max(0, Math.min(90, y));
 });
+
+// ---------------------------------------------
+// TIR
+// ---------------------------------------------
+document.addEventListener("keydown", (event) => {
+  if (event.code === "Space") {
+    const shipRect = ship.getBoundingClientRect();
+    const gameRect = gameContainer.getBoundingClientRect();
+
+    const bullet = document.createElement("div");
+    bullet.classList.add("bullet");
+
+    bullet.style.position = "absolute";
+    bullet.style.width = "5px";
+    bullet.style.height = "20px";
+    bullet.style.background = "red";
+
+    bullet.style.left =
+      shipRect.left - gameRect.left + shipRect.width / 2 - 2.5 + "px";
+    bullet.style.top = shipRect.top - gameRect.top - 20 + "px";
+
+    gameContainer.appendChild(bullet);
+
+    let bulletInterval = setInterval(() => {
+      let top = parseInt(bullet.style.top);
+      bullet.style.top = top - 10 + "px";
+
+      detectBulletCollision(bullet, bulletInterval);
+
+      if (top < 0) {
+        bullet.remove();
+        clearInterval(bulletInterval);
+      }
+    }, 20);
+  }
+});
+
+// ---------------------------------------------
+// ALIENS
+// ---------------------------------------------
+function spawnAliens() {
+  for (let i = 0; i < alienCount; i++) {
+    const alien = document.createElement("img");
+    alien.src = "assets/imgs/alien.png";
+    alien.classList.add("alien");
+    alien.style.position = "absolute";
+    alien.style.width = "50px";
+    alien.style.left = Math.random() * 90 + "%";
+    alien.style.top = "0px";
+
+    gameContainer.appendChild(alien);
+
+    alienList.push({
+      element: alien,
+      x: Math.random() * 90,
+      y: 0
+    });
+  }
+}
+
+function moveAliens() {
+  alienList.forEach((alien) => {
+    alien.x += (Math.random() - 0.5) * 5;
+    alien.x = Math.max(0, Math.min(90, alien.x));
+
+    alien.y += 3;
+
+    // Si un alien touche le bas → vie perdue
+    if (alien.y > 700) {
+      vies--;
+      updateHUD();
+      respawnAlien(alien);
+
+      if (vies <= 0) {
+        clearInterval(speed);
+
+        // Affiche l'écran Game Over
+        const gameOverScreen = document.querySelector(".game-over-screen");
+        gameOverScreen.querySelector(".final-score").textContent = score;
+        gameOverScreen.style.display = "flex";
+      }
+    }
+
+    alien.element.style.left = alien.x + "%";
+    alien.element.style.top = alien.y + "px";
+  });
+}
+
+
+function respawnAlien(alien) {
+  alien.x = Math.random() * 90;
+  alien.y = 0;
+  alien.element.style.left = alien.x + "%";
+  alien.element.style.top = alien.y + "px";
+}
+
+// ---------------------------------------------
+// COLLISION TIR ↔ ALIEN
+// ---------------------------------------------
+function detectBulletCollision(bullet, interval) {
+  const bulletRect = bullet.getBoundingClientRect();
+
+  alienList.forEach((alien) => {
+    const alienRect = alien.element.getBoundingClientRect();
+
+    const touche =
+      bulletRect.top < alienRect.bottom &&
+      bulletRect.bottom > alienRect.top &&
+      bulletRect.left < alienRect.right &&
+      bulletRect.right > alienRect.left;
+
+    if (touche) {
+      alien.element.style.display = "none";
+      bullet.remove();
+      clearInterval(interval);
+
+      score += 10;
+      updateHUD();
+
+      setTimeout(() => {
+        alien.element.style.display = "block";
+        respawnAlien(alien);
+      }, 300);
+    }
+  });
+}
+
+// ---------------------------------------------
+// BOUTON START
+// ---------------------------------------------
+buttonStart.addEventListener("click", function () {
+  gameContainer.style.display = "block";
+  buttonStart.style.display = "none";
+
+  // Vies, score, timer reset
+  score = 0;
+  vies = 3;
+  timer = 0;
+  updateHUD();
+
+
+  // Aliens générés une seule fois
+  if (alienList.length === 0) spawnAliens();
+
+  // Timer
+  const departSecondes = 1
+  let temps = departSecondes * 1
+  const timerElement = document.getElementById("timer")
+  setInterval(() => {
+    let minutes = parseInt(temps / 60, 10)
+    let secondes = parseInt(temps % 60, 10)
+    minutes = minutes < 10 ? "0" + minutes : minutes
+    secondes = secondes < 10 ? "0" + secondes : secondes
+    timerElement.innerText = `${minutes}:${secondes}`
+    temps = temps <= 0 ? 0 : temps + 1
+  }, 1000)
+
+  // Déplacement aliens
+  speed = setInterval(moveAliens, alienSpeed);
+});
+
+
+
+buttonRestart.addEventListener("click", function () {
+  gameContainer.style.display = "block";
+  buttonStart.style.display = "none";
+
+  // Vies, score, timer reset
+  score = 0;
+  vies = 3;
+  timer = 0;
+  updateHUD();
+
+
+  // Aliens générés une seule fois
+  if (alienList.length === 0) spawnAliens();
+
+  // Timer
+
+  const departSecondes = 1
+  let temps = departSecondes * 1
+  const timerElement = document.getElementById("timer")
+  setInterval(() => {
+    let minutes = parseInt(temps / 60, 10)
+    let secondes = parseInt(temps % 60, 10)
+    minutes = minutes < 10 ? "0" + minutes : minutes
+    secondes = secondes < 10 ? "0" + secondes : secondes
+    timerElement.innerText = `${minutes}:${secondes}`
+    temps = temps <= 0 ? 0 : temps + 1
+  }, 1000)
+
+  // Déplacement aliens
+  speed = setInterval(moveAliens, alienSpeed);
+});
+
+// ---------------------------------------------
+// BOUTON END
+// ---------------------------------------------
+document.getElementById("end").addEventListener("click", function () {
+  // stop tout
+  clearInterval(speed);
+  gameContainer.style.display = "none";
+  buttonStart.style.display = "block"; // si tu veux pouvoir relancer
+});
+

@@ -11,6 +11,9 @@
 <body>
     <header>
         <h1>Space-Invader</h1>
+        <button type="button" id="start">Start</button>
+        <button type="button" id="end">End-game</button>
+        <button type="button" id="restart">Restart</button>
     </header>
 
     <main>
@@ -18,7 +21,29 @@
             <div id="imagesContainer">
                 <img id="vaisseau" src="/assets/imgs/ship.png" alt="vaisseau">
             </div>
+            <!-- HUD SIMPLE -->
+            <div id="hud-simple">
+                <div id="hud-score">
+                    Score : 0
+                </div>
+                <div id="hud-lives">
+                    Vies : ❤❤❤
+                </div>
+                <div id="timerContainer">
+                    <p>Temps: <span id="timer"></span></p>
+                </div>
+            </div>
         </section>
+        
+        <div class="game-over-screen">
+            <div class="game-over-box">
+                <h1>GAME OVER</h1>
+                <p>Score final : <span class="final-score">0</span></p>
+                <button type="button" id="restart">Restart</button>
+                
+            </div>
+        </div>
+
     </main>
     <footer>
 
