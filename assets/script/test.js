@@ -11,7 +11,7 @@ let timerInterval = null;
 // Position du vaisseau
 let x = 50;
 let y = 90;
-const vitesse = 1;
+const vitesse = 2;
 
 // Aliens
 let alienList = [];
@@ -32,7 +32,7 @@ function updateHUD() {
 // ---------------------------------------------
 document.addEventListener("keydown", (event) => {
   switch (event.key) {
-    case "ArrowRight":
+    case "ArrowRight"|| "d":
       x += vitesse;
       break;
     case "ArrowLeft":
@@ -48,8 +48,8 @@ document.addEventListener("keydown", (event) => {
   ship.style.left = x + "%";
   ship.style.top = y + "%";
 
-  x = Math.max(0, Math.min(90, x));
-  y = Math.max(0, Math.min(90, y));
+  x = Math.max(3, Math.min(98, x));
+  y = Math.max(5, Math.min(98, y));
 });
 
 // ---------------------------------------------
@@ -119,7 +119,7 @@ function moveAliens() {
     alien.y += 8;
 
     // Si un alien touche le bas → vie perdue
-    if (alien.y > 700) {
+    if (alien.y > 750) {
       vies--;
       updateHUD();
       respawnAlien(alien);
@@ -202,21 +202,7 @@ buttonStart.addEventListener("click", function () {
 
 
 buttonRestart.addEventListener("click", function () {
-  gameContainer.style.display = "block";
-  buttonStart.style.display = "none";
-
-  // Vies, score, timer reset
-  score = 0;
-  vies = 3;
-  timer = 0;
-  updateHUD();
-  // Aliens générés une seule fois
-  if (alienList.length === 0) spawnAliens();
-
-  // Timer
-  startTimer();
-  // Déplacement aliens
-  speed = setInterval(moveAliens, alienSpeed);
+  location.reload()
 });
 
 // ---------------------------------------------
