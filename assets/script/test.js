@@ -116,7 +116,7 @@ function moveAliens() {
     alien.x += (Math.random() - 0.5) * 5;
     alien.x = Math.max(0, Math.min(90, alien.x));
 
-    alien.y += 3;
+    alien.y += 8;
 
     // Si un alien touche le bas → vie perdue
     if (alien.y > 700) {
@@ -190,24 +190,11 @@ buttonStart.addEventListener("click", function () {
   vies = 3;
   timer = 0;
   updateHUD();
-
-
   // Aliens générés une seule fois
   if (alienList.length === 0) spawnAliens();
 
   // Timer
-  const departSecondes = 1
-  let temps = departSecondes * 1
-  const timerElement = document.getElementById("timer")
-  setInterval(() => {
-    let minutes = parseInt(temps / 60, 10)
-    let secondes = parseInt(temps % 60, 10)
-    minutes = minutes < 10 ? "0" + minutes : minutes
-    secondes = secondes < 10 ? "0" + secondes : secondes
-    timerElement.innerText = `${minutes}:${secondes}`
-    temps = temps <= 0 ? 0 : temps + 1
-  }, 1000)
-
+  startTimer();
   // Déplacement aliens
   speed = setInterval(moveAliens, alienSpeed);
 });
@@ -223,25 +210,11 @@ buttonRestart.addEventListener("click", function () {
   vies = 3;
   timer = 0;
   updateHUD();
-
-
   // Aliens générés une seule fois
   if (alienList.length === 0) spawnAliens();
 
   // Timer
-
-  const departSecondes = 1
-  let temps = departSecondes * 1
-  const timerElement = document.getElementById("timer")
-  setInterval(() => {
-    let minutes = parseInt(temps / 60, 10)
-    let secondes = parseInt(temps % 60, 10)
-    minutes = minutes < 10 ? "0" + minutes : minutes
-    secondes = secondes < 10 ? "0" + secondes : secondes
-    timerElement.innerText = `${minutes}:${secondes}`
-    temps = temps <= 0 ? 0 : temps + 1
-  }, 1000)
-
+  startTimer();
   // Déplacement aliens
   speed = setInterval(moveAliens, alienSpeed);
 });
@@ -256,3 +229,21 @@ document.getElementById("end").addEventListener("click", function () {
   buttonStart.style.display = "block"; // si tu veux pouvoir relancer
 });
 
+
+function startTimer() {
+  clearInterval(timerInterval); // Stoppe l'ancien timer s'il existe
+
+  let temps = 0;
+  const timerElement = document.getElementById("timer");
+
+  timerInterval = setInterval(() => {
+    let minutes = parseInt(temps / 60, 10);
+    let secondes = parseInt(temps % 60, 10);
+
+    minutes = minutes < 10 ? "0" + minutes : minutes;
+    secondes = secondes < 10 ? "0" + secondes : secondes;
+
+    timerElement.innerText = `${minutes}:${secondes}`;
+    temps += 1; // Compte vers le haut
+  }, 1000);
+}
