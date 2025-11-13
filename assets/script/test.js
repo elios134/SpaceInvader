@@ -3,8 +3,11 @@ const ship = document.getElementById("vaisseau");
 let buttonStart = document.querySelector("#start");
 let buttonRestart = document.querySelector("#restart");
 let timerContainer = document.querySelector("#timerContainer")
-let buttonEnd = document.querySelector("#end");
 const gameContainer = document.getElementById("gameContainer");
+const mainAudio = new Audio("./assets/sounds/main-audio.mp3")
+const destroyShip = new Audio("./assets/sounds/destroy.mp3");
+const laser = new Audio("./assets/sounds/laser-gun.mp3")
+const life = new Audio("./assets/sounds/life.mp3")
 
 let timerInterval = null;
 
@@ -21,7 +24,7 @@ let alienSpeed = 300;
 
 // HUD
 let score = 0;
-let vies = 3;
+let vies = 5;
 // --- HUD UPDATE ---
 function updateHUD() {
   document.getElementById("hud-score").textContent = "Score : " + score;
@@ -32,7 +35,7 @@ function updateHUD() {
 // ---------------------------------------------
 document.addEventListener("keydown", (event) => {
   switch (event.key) {
-    case "ArrowRight"|| "d":
+    case "ArrowRight":
       x += vitesse;
       break;
     case "ArrowLeft":
@@ -57,6 +60,7 @@ document.addEventListener("keydown", (event) => {
 // ---------------------------------------------
 document.addEventListener("keydown", (event) => {
   if (event.code === "Space") {
+    laser.cloneNode().play()
     const shipRect = ship.getBoundingClientRect();
     const gameRect = gameContainer.getBoundingClientRect();
 
@@ -120,17 +124,20 @@ function moveAliens() {
 
     // Si un alien touche le bas → vie perdue
     if (alien.y > 750) {
+      life.cloneNode().play()
       vies--;
       updateHUD();
       respawnAlien(alien);
 
       if (vies <= 0) {
         clearInterval(speed);
-
+        mainAudio.pause();
+        mainAudio.currentTime = 0
         // Affiche l'écran Game Over
         const gameOverScreen = document.querySelector(".game-over-screen");
         gameOverScreen.querySelector(".final-score").textContent = score;
         gameOverScreen.style.display = "flex";
+
       }
     }
 
@@ -163,6 +170,22 @@ function detectBulletCollision(bullet, interval) {
       bulletRect.right > alienRect.left;
 
     if (touche) {
+      destroyShip.cloneNode().play()
+      // --- BONUS +1 POSITIONNÉ SUR L'ALIEN ---
+      const bonus = document.createElement("p");
+      bonus.textContent = "+10";
+      bonus.style.color = "green";
+      bonus.style.position = "absolute";
+      bonus.style.left = alien.element.style.left;
+      bonus.style.top = alien.element.style.top;
+      bonus.style.transform = "translate(-50%, -50%)";
+      bonus.style.fontSize = "25px";
+      bonus.style.fontWeight = "700";
+      gameContainer.appendChild(bonus);
+
+      setTimeout(() => bonus.remove(), 500);
+
+      // --- COLLISION ---
       alien.element.style.display = "none";
       bullet.remove();
       clearInterval(interval);
@@ -178,16 +201,19 @@ function detectBulletCollision(bullet, interval) {
   });
 }
 
+
 // ---------------------------------------------
 // BOUTON START
 // ---------------------------------------------
 buttonStart.addEventListener("click", function () {
   gameContainer.style.display = "block";
-  buttonStart.style.display = "none";
+  mainAudio.play()
+  mainAudio.loop = true
+  const gameStartscreen = document.querySelector('.game-start-screen')
+  gameStartscreen.style.display = "none"
 
   // Vies, score, timer reset
   score = 0;
-  vies = 3;
   timer = 0;
   updateHUD();
   // Aliens générés une seule fois
@@ -204,17 +230,6 @@ buttonStart.addEventListener("click", function () {
 buttonRestart.addEventListener("click", function () {
   location.reload()
 });
-
-// ---------------------------------------------
-// BOUTON END
-// ---------------------------------------------
-document.getElementById("end").addEventListener("click", function () {
-  // stop tout
-  clearInterval(speed);
-  gameContainer.style.display = "none";
-  buttonStart.style.display = "block"; // si tu veux pouvoir relancer
-});
-
 
 function startTimer() {
   clearInterval(timerInterval); // Stoppe l'ancien timer s'il existe

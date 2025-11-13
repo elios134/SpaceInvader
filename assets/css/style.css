@@ -14,43 +14,6 @@ body {
     flex-direction: column;
 }
 
-/* HEADER */
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(8px);
-}
-
-header h1 {
-    font-size: 1.6rem;
-    color: #58a6ff;
-}
-
-button {
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: bold;
-    background: #238636;
-    color: #fff;
-    transition: 0.15s;
-}
-
-button:hover {
-    background: #2ea043;
-    transform: scale(1.05);
-}
-
-#score {
-    margin-left: auto;
-}
-
 /* MAIN */
 main {
     flex: 1;
@@ -172,6 +135,57 @@ main {
     background: #ddd;
 }
 
+.game-start-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.game-start-box {
+    display: flex;
+    flex-direction: column;
+    background: #222;
+    padding: 40px;
+    border-radius: 12px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  p{
+        font-size: 30px;
+    }  
+}
+
+.game-start-box button {
+    margin: 10px;
+    padding: 10px 20px;
+    
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #235e86;
+    color: #fff;
+    transition: 0.15s;
+   
+}
+ 
+.game-start-box button:hover {
+    background: #2e52a0;
+    transform: scale(1.05);
+}
+
+.game-start-box h1 {
+    margin-bottom: 15px;
+    font-size: 2.5em;
+    letter-spacing: 2px;
+    color: #235e86;
+}
 
 #hud-score {
     color: #4caf50;
