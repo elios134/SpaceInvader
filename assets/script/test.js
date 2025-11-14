@@ -7,12 +7,15 @@ let buttonPlay = document.querySelector("#play")
 let timerContainer = document.querySelector("#timerContainer")
 const gameContainer = document.getElementById("gameContainer");
 const gamePauseScreen = document.querySelector(".game-pause-screen");
+const gameOverScreen = document.querySelector(".game-over-screen");
 const mainAudio = new Audio("./assets/sounds/main-audio.mp3")
 const destroyShip = new Audio("./assets/sounds/destroy.mp3");
 const laser = new Audio("./assets/sounds/laser-gun.mp3")
 const life = new Audio("./assets/sounds/life.mp3")
 
-let timerInterval = null;
+let timerInterval = null
+let temps = 0;
+
 
 // Position du vaisseau
 let x = 50;
@@ -21,7 +24,7 @@ const vitesse = 5;
 
 // Aliens
 let alienList = [];
-const alienCount = 6;
+const alienCount = 5;
 let speed;
 let alienSpeed = 300;
 
@@ -67,17 +70,6 @@ document.addEventListener("keydown", (event) => {
       break;
 
   }
-  ship.style.left = x + "%";
-  ship.style.top = y + "%";
-
-  x = Math.max(3, Math.min(98, x));
-  y = Math.max(5, Math.min(98, y));
-});
-
-// ---------------------------------------------
-// TIR
-// ---------------------------------------------
-document.addEventListener("keydown", (event) => {
   if (event.code === "Space") {
     laser.cloneNode().play()
     const shipRect = ship.getBoundingClientRect();
@@ -109,6 +101,11 @@ document.addEventListener("keydown", (event) => {
       }
     }, 20);
   }
+  ship.style.left = x + "%";
+  ship.style.top = y + "%";
+
+  x = Math.max(3, Math.min(98, x));
+  y = Math.max(5, Math.min(98, y));
 });
 
 // ---------------------------------------------
@@ -172,14 +169,7 @@ function moveAliens() {
       respawnAlien(alien);
 
       if (vies <= 0) {
-        clearInterval(speed);
-        clearInterval(timerInterval);
-        mainAudio.pause();
-        mainAudio.currentTime = 0;
-
-        const gameOverScreen = document.querySelector(".game-over-screen");
-        gameOverScreen.querySelector(".final-score").textContent = score;
-        gameOverScreen.style.display = "flex";
+        gameOver()
       }
     }
 
@@ -191,14 +181,7 @@ function moveAliens() {
       respawnAlien(alien);
 
       if (vies <= 0) {
-        clearInterval(speed);
-        clearInterval(timerInterval);
-        mainAudio.pause();
-        mainAudio.currentTime = 0;
-
-        const gameOverScreen = document.querySelector(".game-over-screen");
-        gameOverScreen.querySelector(".final-score").textContent = score;
-        gameOverScreen.style.display = "flex";
+        gameOver()
       }
     }
 
@@ -264,8 +247,17 @@ function detectBulletCollision(bullet, interval) {
     }
   });
 }
-
-
+// ---------------------------------------------
+// GAME OVER
+// ---------------------------------------------
+function gameOver() {
+  clearInterval(speed);
+  clearInterval(timerInterval);
+  mainAudio.pause();
+  mainAudio.currentTime = 0;
+  gameOverScreen.querySelector(".final-score").textContent = score;
+  gameOverScreen.style.display = "flex";
+}
 // ---------------------------------------------
 // BOUTON START/RESTART/PAUSE/PLAY
 // ---------------------------------------------
@@ -284,22 +276,17 @@ buttonStart.addEventListener("click", function () {
   if (alienList.length === 0) spawnAliens();
 
   // Timer
+  temps = 60
   startTimer();
   // Déplacement aliens
   speed = setInterval(moveAliens, alienSpeed);
 });
+
 buttonRestart.addEventListener("click", function () {
   location.reload()
 });
 
 buttonPause.addEventListener("click", pause)
-
-document.addEventListener("keydown", (event) => {
-  if (event.code === "Escape") {
-    pause()
-  }
-})
-
 function pause() {
   clearInterval(speed);
   clearInterval(timerInterval)
@@ -307,19 +294,28 @@ function pause() {
   mainAudio.currentTime = 0
   gamePauseScreen.style.display = "flex";
 }
-
 buttonPlay.addEventListener("click", function () {
+  play()
+})
+function play() {
   gamePauseScreen.style.display = "none"
   speed = setInterval(moveAliens, alienSpeed);
   mainAudio.play()
   mainAudio.loop = true
   startTimer()
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.code === "Escape") {
+   pause()
+  }
 })
+// ---------------------------------------------
+// FONCTION TIMER
+// ---------------------------------------------
 
 function startTimer() {
   clearInterval(timerInterval); // Stoppe l'ancien timer s'il existe
-
-  let temps = 0;
   const timerElement = document.getElementById("timer");
 
   timerInterval = setInterval(() => {
@@ -330,6 +326,13 @@ function startTimer() {
     secondes = secondes < 10 ? "0" + secondes : secondes;
 
     timerElement.innerText = `${minutes}:${secondes}`;
-    temps += 1; // Compte vers le haut
+
+    if (temps <= 0) {
+      clearInterval(timerInterval);
+      gameOver();
+      return;
+    }
+
+    temps--;
   }, 1000);
 }
