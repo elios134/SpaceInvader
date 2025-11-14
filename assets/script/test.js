@@ -2,8 +2,11 @@
 const ship = document.getElementById("vaisseau");
 let buttonStart = document.querySelector("#start");
 let buttonRestart = document.querySelector("#restart");
+let buttonPause = document.querySelector("#pause")
+let buttonPlay = document.querySelector("#play")
 let timerContainer = document.querySelector("#timerContainer")
 const gameContainer = document.getElementById("gameContainer");
+const gamePauseScreen = document.querySelector(".game-pause-screen");
 const mainAudio = new Audio("./assets/sounds/main-audio.mp3")
 const destroyShip = new Audio("./assets/sounds/destroy.mp3");
 const laser = new Audio("./assets/sounds/laser-gun.mp3")
@@ -14,7 +17,7 @@ let timerInterval = null;
 // Position du vaisseau
 let x = 50;
 let y = 90;
-const vitesse = 2;
+const vitesse = 5;
 
 // Aliens
 let alienList = [];
@@ -38,15 +41,31 @@ document.addEventListener("keydown", (event) => {
     case "ArrowRight":
       x += vitesse;
       break;
+    case "d":
+      x += vitesse;
+      break
+
     case "ArrowLeft":
       x -= vitesse;
       break;
+    case "q":
+      x -= vitesse;
+      break;
+
     case "ArrowUp":
       y -= vitesse;
       break;
+    case "z":
+      y -= vitesse;
+      break;
+
     case "ArrowDown":
       y += vitesse;
       break;
+    case "s":
+      y += vitesse;
+      break;
+
   }
   ship.style.left = x + "%";
   ship.style.top = y + "%";
@@ -116,35 +135,80 @@ function spawnAliens() {
 }
 
 function moveAliens() {
+  // Taille approximative du vaisseau (à ajuster si besoin)
+  const shipWidth = 60;  // en px
+  const shipHeight = 60; // en px
+
+  // Convertir les % en px pour collision
+  const shipX_px = (x / 100) * window.innerWidth;
+  const shipY_px = (y / 100) * window.innerHeight;
+
   alienList.forEach((alien) => {
+
+    // --- MOUVEMENT ALIEN ---
     alien.x += (Math.random() - 0.5) * 5;
     alien.x = Math.max(0, Math.min(90, alien.x));
-
     alien.y += 8;
 
-    // Si un alien touche le bas → vie perdue
-    if (alien.y > 750) {
-      life.cloneNode().play()
+    // Position alien convertie en px
+    const alienX_px = (alien.x / 100) * window.innerWidth;
+    const alienY_px = alien.y;
+
+    // Dimensions de l'alien
+    const alienWidth = alien.width || 50;
+    const alienHeight = alien.height || 50;
+
+    // --- COLLISION ALIEN / VAISSEAU ---
+    if (
+      alienX_px < shipX_px + shipWidth &&
+      alienX_px + alienWidth > shipX_px &&
+      alienY_px < shipY_px + shipHeight &&
+      alienY_px + alienHeight > shipY_px
+    ) {
+      // Collision !
+      life.cloneNode().play();
       vies--;
       updateHUD();
       respawnAlien(alien);
 
       if (vies <= 0) {
         clearInterval(speed);
+        clearInterval(timerInterval);
         mainAudio.pause();
-        mainAudio.currentTime = 0
-        // Affiche l'écran Game Over
+        mainAudio.currentTime = 0;
+
         const gameOverScreen = document.querySelector(".game-over-screen");
         gameOverScreen.querySelector(".final-score").textContent = score;
         gameOverScreen.style.display = "flex";
-
       }
     }
 
+    // --- SI ALIEN TOUCHE LE BAS ---
+    if (alien.y > window.innerHeight - 100) {
+      life.cloneNode().play();
+      vies--;
+      updateHUD();
+      respawnAlien(alien);
+
+      if (vies <= 0) {
+        clearInterval(speed);
+        clearInterval(timerInterval);
+        mainAudio.pause();
+        mainAudio.currentTime = 0;
+
+        const gameOverScreen = document.querySelector(".game-over-screen");
+        gameOverScreen.querySelector(".final-score").textContent = score;
+        gameOverScreen.style.display = "flex";
+      }
+    }
+
+    // --- Mise à jour DOM ---
     alien.element.style.left = alien.x + "%";
     alien.element.style.top = alien.y + "px";
   });
 }
+
+
 
 
 function respawnAlien(alien) {
@@ -203,7 +267,7 @@ function detectBulletCollision(bullet, interval) {
 
 
 // ---------------------------------------------
-// BOUTON START
+// BOUTON START/RESTART/PAUSE/PLAY
 // ---------------------------------------------
 buttonStart.addEventListener("click", function () {
   gameContainer.style.display = "block";
@@ -224,12 +288,33 @@ buttonStart.addEventListener("click", function () {
   // Déplacement aliens
   speed = setInterval(moveAliens, alienSpeed);
 });
-
-
-
 buttonRestart.addEventListener("click", function () {
   location.reload()
 });
+
+buttonPause.addEventListener("click", pause)
+
+document.addEventListener("keydown", (event) => {
+  if (event.code === "Escape") {
+    pause()
+  }
+})
+
+function pause() {
+  clearInterval(speed);
+  clearInterval(timerInterval)
+  mainAudio.pause();
+  mainAudio.currentTime = 0
+  gamePauseScreen.style.display = "flex";
+}
+
+buttonPlay.addEventListener("click", function () {
+  gamePauseScreen.style.display = "none"
+  speed = setInterval(moveAliens, alienSpeed);
+  mainAudio.play()
+  mainAudio.loop = true
+  startTimer()
+})
 
 function startTimer() {
   clearInterval(timerInterval); // Stoppe l'ancien timer s'il existe

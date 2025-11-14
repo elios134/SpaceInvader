@@ -1,4 +1,3 @@
-/* RESET */
 * {
     margin: 0;
     padding: 0;
@@ -12,6 +11,7 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
+    user-select: none;
 }
 
 /* MAIN */
@@ -48,7 +48,7 @@ main {
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    transition: top 0.1s linear, left 0.1s linear
+    transition: top 0.3s linear, left 0.3s linear
 }
 
 /* BULLETS */
@@ -157,24 +157,24 @@ main {
     text-align: center;
     color: white;
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-  p{
+
+    p {
         font-size: 30px;
-    }  
+    }
 }
 
 .game-start-box button {
     margin: 10px;
     padding: 10px 20px;
-    
     border: none;
     border-radius: 8px;
     cursor: pointer;
     background: #235e86;
     color: #fff;
     transition: 0.15s;
-   
+
 }
- 
+
 .game-start-box button:hover {
     background: #2e52a0;
     transform: scale(1.05);
@@ -197,4 +197,57 @@ main {
 
 #hud-timer {
     color: #03a9f4;
+}
+
+.game-pause-screen {
+   position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    /* caché par défaut */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.game-pause-box {
+    flex-direction: column;
+    background: #222;
+    padding: 40px;
+    border-radius: 12px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.game-pause-box button {
+    margin: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #235e86;
+    color: #fff;
+    transition: 0.15s;
+
+}
+
+.game-pause-box button:hover {
+    background: #2e52a0;
+    transform: scale(1.05);
+}
+
+.game-pauset-box h1 {
+    margin-bottom: 15px;
+    font-size: 2.5em;
+    letter-spacing: 2px;
+    color: #235e86;
+}
+
+#play {
+    width: 48px;
+    height: 48px;
 }
