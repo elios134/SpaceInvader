@@ -8,13 +8,19 @@ let timerContainer = document.querySelector("#timerContainer")
 const gameContainer = document.getElementById("gameContainer");
 const gamePauseScreen = document.querySelector(".game-pause-screen");
 const gameOverScreen = document.querySelector(".game-over-screen");
+
 const mainAudio = new Audio("./assets/sounds/main-audio.mp3")
 const destroyShip = new Audio("./assets/sounds/destroy.mp3");
 const laser = new Audio("./assets/sounds/laser-gun.mp3")
 const life = new Audio("./assets/sounds/life.mp3")
 
+
+// ---------------------------------------------
+// VARIABLES GLOBALES
+// ---------------------------------------------
 let timerInterval = null
 let temps = 0;
+let isPaused = false;
 
 
 // Position du vaisseau
@@ -24,13 +30,14 @@ const vitesse = 5;
 
 // Aliens
 let alienList = [];
-const alienCount = 5;
+let alienCount = 5;
 let speed;
 let alienSpeed = 300;
 
 // HUD
 let score = 0;
 let vies = 5;
+
 // --- HUD UPDATE ---
 function updateHUD() {
   document.getElementById("hud-score").textContent = "Score : " + score;
@@ -40,6 +47,9 @@ function updateHUD() {
 // MOUVEMENT VAISSEAU
 // ---------------------------------------------
 document.addEventListener("keydown", (event) => {
+  if (isPaused && event.code !== "Escape") {
+    return; // On bloque tout sauf "Escape"
+  }
   switch (event.key) {
     case "ArrowRight":
       x += vitesse;
@@ -68,7 +78,6 @@ document.addEventListener("keydown", (event) => {
     case "s":
       y += vitesse;
       break;
-
   }
   if (event.code === "Space") {
     laser.cloneNode().play()
@@ -134,7 +143,7 @@ function spawnAliens() {
 function moveAliens() {
   // Taille approximative du vaisseau (à ajuster si besoin)
   const shipWidth = 60;  // en px
-  const shipHeight = 60; // en px
+  const shipHeight = 64; // en px
 
   // Convertir les % en px pour collision
   const shipX_px = (x / 100) * window.innerWidth;
@@ -288,6 +297,7 @@ buttonRestart.addEventListener("click", function () {
 
 buttonPause.addEventListener("click", pause)
 function pause() {
+  isPaused = true;
   clearInterval(speed);
   clearInterval(timerInterval)
   mainAudio.pause();
@@ -298,6 +308,7 @@ buttonPlay.addEventListener("click", function () {
   play()
 })
 function play() {
+  isPaused = false;
   gamePauseScreen.style.display = "none"
   speed = setInterval(moveAliens, alienSpeed);
   mainAudio.play()
@@ -307,9 +318,14 @@ function play() {
 
 document.addEventListener("keydown", (event) => {
   if (event.code === "Escape") {
-   pause()
+    if (isPaused) {
+      play();     // Reprendre
+    } else {
+      pause();    // Mettre en pause
+    }
   }
-})
+});
+
 // ---------------------------------------------
 // FONCTION TIMER
 // ---------------------------------------------
