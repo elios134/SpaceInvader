@@ -260,6 +260,7 @@ function detectBulletCollision(bullet, interval) {
 // GAME OVER
 // ---------------------------------------------
 function gameOver() {
+  isPaused = true;
   clearInterval(speed);
   clearInterval(timerInterval);
   mainAudio.pause();
@@ -359,3 +360,4 @@ volumeSlider.addEventListener("input", (e) => {
   mainAudio.volume = e.target.value; // règle le volume de la musique principale
 });
 
+ 
