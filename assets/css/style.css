@@ -215,6 +215,8 @@ main {
 }
 
 .game-pause-box {
+    display: flex;
+    align-items: center;
     flex-direction: column;
     background: #222;
     padding: 40px;

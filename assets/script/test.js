@@ -352,3 +352,10 @@ function startTimer() {
     temps--;
   }, 1000);
 }
+
+const volumeSlider = document.getElementById("volumeControl");
+
+volumeSlider.addEventListener("input", (e) => {
+  mainAudio.volume = e.target.value; // règle le volume de la musique principale
+});
+
