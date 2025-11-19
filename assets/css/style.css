@@ -52,6 +52,48 @@ main {
     transition: top 0.3s linear, left 0.3s linear
 }
 
+/* --- Styles pour la zone du Joystick --- */
+
+#joystick-zone {
+    display: none;
+    /* Positionnement absolu pour le fixer dans le coin */
+    position: absolute;
+    bottom: 20px;
+    /* Espace depuis le bas */
+    left: 20px;
+    /* Espace depuis la gauche */
+
+    /* Dimensions et style */
+    width: 150px;
+    height: 150px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    /* Cercle extérieur transparent */
+    border-radius: 50%;
+    z-index: 999;
+    /* Au-dessus du jeu, mais sous le bouton de tir si besoin */
+    opacity: 0.3;
+    /* Très discret */
+}
+
+#joystick-handle {
+    display: none;
+    /* Le 'manche' qui suit le doigt */
+    position: absolute;
+    /* Centré dans la zone par défaut */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    /* Dimensions et style */
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+
+    /* S'assurer que le manche est dans le joystick-zone */
+    box-sizing: border-box;
+}
+
 /* BULLETS */
 .bullet {
     position: absolute;
@@ -60,6 +102,39 @@ main {
     background: #f85149;
     border-radius: 3px;
     box-shadow: 0 0 8px #f85149;
+}
+
+#fire-button {
+    display: none;
+    /* Positionnement fixe par rapport au conteneur de jeu */
+    position: absolute;
+    bottom: 20px;
+    /* 20px du bas */
+    right: 20px;
+    /* 20px de la droite */
+
+    /* Style visuel */
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    /* Rendre le bouton circulaire */
+    background-color: #ff004c;
+    /* Rouge vif pour le tir */
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: 4px solid #cc003e;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+
+    /* S'assurer que le bouton est au-dessus du jeu */
+    z-index: 1000;
+
+    /* Amélioration pour le tactile */
+    user-select: none;
+    /* Empêche la sélection de texte */
+    touch-action: manipulation;
+    /* Optimisation pour les événements tactiles */
 }
 
 /* ALIENS */
@@ -201,7 +276,7 @@ main {
 }
 
 .game-pause-screen {
-   position: fixed;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
@@ -253,4 +328,18 @@ main {
 #play {
     width: 48px;
     height: 48px;
+}
+
+@media screen and (max-width:768px) {
+    #fire-button {
+        display: block;
+    }
+
+    #joystick-zone {
+        display: block;
+    }
+
+    #joystick-handle {
+        display: block;
+    }
 }

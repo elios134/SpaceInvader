@@ -8,12 +8,20 @@ let timerContainer = document.querySelector("#timerContainer")
 const gameContainer = document.getElementById("gameContainer");
 const gamePauseScreen = document.querySelector(".game-pause-screen");
 const gameOverScreen = document.querySelector(".game-over-screen");
-
+const fireButton = document.getElementById("fire-button");
 const mainAudio = new Audio("./assets/sounds/main-audio.mp3")
 const destroyShip = new Audio("./assets/sounds/destroy.mp3");
 const laser = new Audio("./assets/sounds/laser-gun.mp3")
 const life = new Audio("./assets/sounds/life.mp3")
+const volumeSlider = document.getElementById("volumeControl");
 
+// --- VARIABLES GLOBALES POUR JOYSTICK ---
+const joystickZone = document.getElementById("joystick-zone");
+const joystickHandle = document.getElementById("joystick-handle");
+let joystickCenter = { x: 0, y: 0 };
+let joystickActive = false;
+const maxJoystickDistance = 75; // Correspond à la moitié de la taille du #joystick-zone (150px/2)
+let movementInterval = null; // Pour le mouvement continu du vaisseau
 
 // ---------------------------------------------
 // VARIABLES GLOBALES
@@ -43,6 +51,104 @@ function updateHUD() {
   document.getElementById("hud-score").textContent = "Score : " + score;
   document.getElementById("hud-lives").textContent = "Vies : " + "❤".repeat(vies);
 }
+
+// ---------------------------------------------
+// JOYSTICK VIRTUEL
+// ---------------------------------------------
+
+function handleJoystickStart(e) {
+  if (isPaused) return;
+
+  // On prend la position de la zone du joystick pour définir le centre de référence
+  const rect = joystickZone.getBoundingClientRect();
+  joystickCenter.x = rect.left + rect.width / 2;
+  joystickCenter.y = rect.top + rect.height / 2;
+
+  joystickActive = true;
+
+  // Démarre l'intervalle qui va appliquer le mouvement au vaisseau 60 fois par seconde
+  if (movementInterval === null) {
+    movementInterval = setInterval(updateShipPositionFromJoystick, 1000 / 60); // ~60 FPS
+  }
+
+  // Gère le premier contact
+  handleJoystickMove(e);
+}
+
+function handleJoystickMove(e) {
+  if (!joystickActive) return;
+
+  // Empêche le défilement de la page
+  e.preventDefault();
+
+  const touchX = e.touches[0].clientX;
+  const touchY = e.touches[0].clientY;
+
+  // 1. Calcul du déplacement (delta) entre le doigt et le centre du joystick
+  let deltaX = touchX - joystickCenter.x;
+  let deltaY = touchY - joystickCenter.y;
+
+  // 2. Calcul de la distance totale
+  let distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+  // 3. Limiter le manche (handle) à l'intérieur de la zone (clamping)
+  if (distance > maxJoystickDistance) {
+    let scale = maxJoystickDistance / distance;
+    deltaX *= scale;
+    deltaY *= scale;
+    distance = maxJoystickDistance;
+  }
+
+  // Déplace visuellement le manche du joystick
+  joystickHandle.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+  // Stocke la vitesse et la direction normalisées (-1 à +1) dans un dataset
+  joystickZone.dataset.speedX = deltaX / maxJoystickDistance;
+  joystickZone.dataset.speedY = deltaY / maxJoystickDistance;
+}
+
+function handleJoystickEnd(e) {
+  joystickActive = false;
+
+  // Réinitialise la position du manche
+  joystickHandle.style.transform = `translate(-50%, -50%)`;
+
+  // Arrête le mouvement continu
+  clearInterval(movementInterval);
+  movementInterval = null;
+  joystickZone.dataset.speedX = 0;
+  joystickZone.dataset.speedY = 0;
+}
+
+
+// --- FONCTION D'APPLICATION DU MOUVEMENT (Le "Tick" du joystick) ---
+function updateShipPositionFromJoystick() {
+  const speedX = parseFloat(joystickZone.dataset.speedX) || 0;
+  const speedY = parseFloat(joystickZone.dataset.speedY) || 0;
+
+  // Vitesse de base du vaisseau, multipliée par l'intensité du joystick (entre 0 et 1)
+  const moveAmountX = vitesse * speedX * 0.5;
+  const moveAmountY = vitesse * speedY * 0.5;
+
+  // Applique le mouvement au variables de position (x et y en %)
+  x += moveAmountX;
+  y += moveAmountY;
+
+  // Applique le contrôle des limites
+  x = Math.max(3, Math.min(98, x));
+  y = Math.max(5, Math.min(98, y));
+
+  // Mise à jour finale du DOM pour le vaisseau
+  ship.style.left = x + "%";
+  ship.style.top = y + "%";
+}
+
+
+// --- Écouteurs d'Événements du Joystick ---
+joystickZone.addEventListener('touchstart', handleJoystickStart);
+joystickZone.addEventListener('touchmove', handleJoystickMove);
+joystickZone.addEventListener('touchend', handleJoystickEnd);
+joystickZone.addEventListener('touchcancel', handleJoystickEnd); // Pour les interruptions
 // ---------------------------------------------
 // MOUVEMENT VAISSEAU
 // ---------------------------------------------
@@ -117,6 +223,48 @@ document.addEventListener("keydown", (event) => {
   y = Math.max(5, Math.min(98, y));
 });
 
+
+// ---------------------------------------------
+// TIR TACTILE
+// ---------------------------------------------
+
+fireButton.addEventListener('touchstart', (e) => {
+  if (isPaused) return;
+
+  // Empêche le comportement de clic par défaut
+  e.preventDefault();
+
+  laser.cloneNode().play();
+  const shipRect = ship.getBoundingClientRect();
+  const gameRect = gameContainer.getBoundingClientRect();
+
+  const bullet = document.createElement("div");
+  bullet.classList.add("bullet");
+
+  // Copie de votre style de balle
+  bullet.style.position = "absolute";
+  bullet.style.width = "5px";
+  bullet.style.height = "20px";
+  bullet.style.background = "red";
+
+  // Positionnement de la balle
+  bullet.style.left = shipRect.left - gameRect.left + shipRect.width / 2 - 2.5 + "px";
+  bullet.style.top = shipRect.top - gameRect.top - 20 + "px";
+
+  gameContainer.appendChild(bullet);
+
+  let bulletInterval = setInterval(() => {
+    let top = parseInt(bullet.style.top);
+    bullet.style.top = top - 10 + "px";
+
+    detectBulletCollision(bullet, bulletInterval);
+
+    if (top < 0) {
+      bullet.remove();
+      clearInterval(bulletInterval);
+    }
+  }, 20);
+});
 // ---------------------------------------------
 // ALIENS
 // ---------------------------------------------
@@ -141,7 +289,7 @@ function spawnAliens() {
 }
 
 function moveAliens() {
-  // Taille approximative du vaisseau (à ajuster si besoin)
+  // Taille approximative du vaisseau
   const shipWidth = 60;  // en px
   const shipHeight = 64; // en px
 
@@ -200,9 +348,6 @@ function moveAliens() {
   });
 }
 
-
-
-
 function respawnAlien(alien) {
   alien.x = Math.random() * 90;
   alien.y = 0;
@@ -254,6 +399,7 @@ function detectBulletCollision(bullet, interval) {
         respawnAlien(alien);
       }, 300);
     }
+
   });
 }
 // ---------------------------------------------
@@ -354,10 +500,6 @@ function startTimer() {
   }, 1000);
 }
 
-const volumeSlider = document.getElementById("volumeControl");
-
 volumeSlider.addEventListener("input", (e) => {
   mainAudio.volume = e.target.value; // règle le volume de la musique principale
 });
-
- 
