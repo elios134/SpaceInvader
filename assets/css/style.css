@@ -30,7 +30,7 @@ main {
     max-width: 1400px;
     max-height: 900px;
 
-    background-image: url(/assets/imgs/space);
+    background-image: url(../imgs/space);
     background-size: cover;
     border: 2px solid #30363d;
     box-shadow: 0 0 20px #000;
@@ -271,7 +271,7 @@ main {
     color: #ff5252;
 }
 
-#hud-timer {
+#timerContainer {
     color: #03a9f4;
 }
 
@@ -318,7 +318,7 @@ main {
     transform: scale(1.05);
 }
 
-.game-pauset-box h1 {
+.game-pause-box h1 {
     margin-bottom: 15px;
     font-size: 2.5em;
     letter-spacing: 2px;

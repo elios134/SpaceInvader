@@ -158,34 +158,31 @@ document.addEventListener("keydown", (event) => {
   }
   switch (event.key) {
     case "ArrowRight":
+    case "d":
+      event.preventDefault();
       x += vitesse;
       break;
-    case "d":
-      x += vitesse;
-      break
 
     case "ArrowLeft":
-      x -= vitesse;
-      break;
     case "q":
+      event.preventDefault();
       x -= vitesse;
       break;
 
     case "ArrowUp":
-      y -= vitesse;
-      break;
     case "z":
+      event.preventDefault();
       y -= vitesse;
       break;
 
     case "ArrowDown":
-      y += vitesse;
-      break;
     case "s":
+      event.preventDefault();
       y += vitesse;
       break;
   }
   if (event.code === "Space") {
+    event.preventDefault();
     laser.cloneNode().play()
     const shipRect = ship.getBoundingClientRect();
     const gameRect = gameContainer.getBoundingClientRect();
@@ -216,11 +213,13 @@ document.addEventListener("keydown", (event) => {
       }
     }, 20);
   }
-  ship.style.left = x + "%";
-  ship.style.top = y + "%";
-
+  // On limite la position AVANT de l'appliquer au DOM pour éviter
+  // que le vaisseau ne dépasse visuellement les bords.
   x = Math.max(3, Math.min(98, x));
   y = Math.max(5, Math.min(98, y));
+
+  ship.style.left = x + "%";
+  ship.style.top = y + "%";
 });
 
 
@@ -426,7 +425,7 @@ buttonStart.addEventListener("click", function () {
 
   // Vies, score, timer reset
   score = 0;
-  timer = 0;
+  vies = 5;
   updateHUD();
   // Aliens générés une seule fois
   if (alienList.length === 0) spawnAliens();
@@ -465,6 +464,9 @@ function play() {
 
 document.addEventListener("keydown", (event) => {
   if (event.code === "Escape") {
+    // On ne fait rien si la partie est terminée (écran Game Over affiché)
+    if (gameOverScreen.style.display === "flex") return;
+
     if (isPaused) {
       play();     // Reprendre
     } else {
